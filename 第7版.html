@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="zh-TW" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>輕鬆煮購物清單</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    .product-card {
+      transition: all 0.3s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+    }
+    .qty-btn {
+      transition: all 0.2s ease;
+    }
+    .qty-btn:hover {
+      transform: scale(1.1);
+    }
+    .qty-btn:active {
+      transform: scale(0.95);
+    }
+    .steam {
+      animation: steam 2s ease-in-out infinite;
+    }
+    @keyframes steam {
+      0%, 100% { opacity: 0.3; transform: translateY(0) scale(1); }
+      50% { opacity: 0.8; transform: translateY(-8px) scale(1.1); }
+    }
+    .bounce-in {
+      animation: bounceIn 0.4s ease-out;
+    }
+    @keyframes bounceIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .total-pulse {
+      animation: pulse 0.3s ease-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      z-index: 1000;
+      animation: slideDown 0.3s ease-out;
+    }
+    @keyframes slideDown {
+      from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+      to { transform: translateX(-50%) translateY(0); opacity: 1; }
+    }
+    .toast.success {
+      background: #10B981;
+      color: white;
+    }
+    .toast.error {
+      background: #EF4444;
+      color: white;
+    }
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full overflow-auto" style="background: linear-gradient(135deg, #fff5f5 0%, #fef3e2 50%, #f0fdf4 100%);">
+   <div class="max-w-2xl mx-auto px-4 py-8"><!-- Header -->
+    <header class="text-center mb-8">
+     <div class="inline-flex items-center gap-3 mb-3">
+      <svg class="w-12 h-12" viewbox="0 0 48 48" fill="none"><ellipse cx="24" cy="36" rx="18" ry="8" fill="#D97706" /> <ellipse cx="24" cy="34" rx="16" ry="6" fill="#F59E0B" /> <path d="M8 34V28C8 19.163 15.163 12 24 12C32.837 12 40 19.163 40 28V34" stroke="#D97706" stroke-width="2" fill="#FEF3C7" /> <ellipse cx="24" cy="28" rx="14" ry="5" fill="#FDE68A" /> <!-- Steam --> <g class="steam">
+        <path d="M18 10C18 10 16 6 18 4" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" />
+        <path d="M24 8C24 8 22 4 24 2" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" />
+        <path d="M30 10C30 10 28 6 30 4" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" />
+       </g>
+      </svg>
+     </div>
+     <h1 id="main-title" class="text-3xl font-bold mb-2" style="color: #B45309;">輕鬆煮系列</h1>
+     <p id="subtitle" class="text-lg" style="color: #78716C;">美味湯頭，在家輕鬆享用</p>
+    </header><!-- Products Grid -->
+    <div class="grid gap-4 mb-6" id="products-container"><!-- Product 1: 中式泡菜湯頭 -->
+     <div class="product-card rounded-2xl p-5 shadow-lg" style="background: #FFFFFF;" data-product="chinese-kimchi">
+      <div class="flex items-center justify-between">
+       <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl" style="background: #FEE2E2;">
+         🥬
+        </div>
+        <div>
+         <h3 class="font-bold text-lg" style="color: #B45309;">中式泡菜湯頭</h3>
+         <p class="text-sm" style="color: #78716C;">酸辣開胃・經典風味</p>
+         <p class="font-bold mt-1" style="color: #DC2626;">$120</p>
+        </div>
+       </div>
+       <div class="flex items-center gap-3"><button class="qty-btn w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold shadow-md" style="background: #FEE2E2; color: #DC2626;" onclick="updateQuantity('chinese-kimchi', -1)">−</button> <span id="qty-chinese-kimchi" class="w-8 text-center font-bold text-xl" style="color: #B45309;">0</span> <button class="qty-btn w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold shadow-md" style="background: #DCFCE7; color: #16A34A;" onclick="updateQuantity('chinese-kimchi', 1)">+</button>
+       </div>
+      </div>
+     </div><!-- Product 2: 日式昆布湯頭 -->
+     <div class="product-card rounded-2xl p-5 shadow-lg" style="background: #FFFFFF;" data-product="japanese-kombu">
+      <div class="flex items-center justify-between">
+       <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl" style="background: #DBEAFE;">
+         🍜
+        </div>
+        <div>
+         <h3 class="font-bold text-lg" style="color: #B45309;">日式昆布湯頭</h3>
+         <p class="text-sm" style="color: #78716C;">清甜鮮美・和風原味</p>
+         <p class="font-bold mt-1" style="color: #DC2626;">$120</p>
+        </div>
+       </div>
+       <div class="flex items-center gap-3"><button class="qty-btn w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold shadow-md" style="background: #FEE2E2; color: #DC2626;" onclick="updateQuantity('japanese-kombu', -1)">−</button> <span id="qty-japanese-kombu" class="w-8 text-center font-bold text-xl" style="color: #B45309;">0</span> <button class="qty-btn w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold shadow-md" style="background: #DCFCE7; color: #16A34A;" onclick="updateQuantity('japanese-kombu', 1)">+</button>
+       </div>
+      </div>
+     </div><!-- Product 3: 仙草湯頭 -->
+     <div class="product-card rounded-2xl p-5 shadow-lg" style="background: #FFFFFF;" data-product="grass-jelly">
+      <div class="flex items-center justify-between">
+       <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl" style="background: #E9D5FF;">
+         🍵
+        </div>
+        <div>
+         <h3 class="font-bold text-lg" style="color: #B45309;">   草湯頭</h3>
+         <p class="text-sm" style="color: #78716C;">消暑解渴・養生首選</p>
+         <p class="font-bold mt-1" style="color: #DC2626;">$120</p>
+        </div>
+       </div>
+       <div class="flex items-center gap-3"><button class="qty-btn w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold shadow-md" style="background: #FEE2E2; color: #DC2626;" onclick="updateQuantity('grass-jelly', -1)">−</button> <span id="qty-grass-jelly" class="w-8 text-center font-bold text-xl" style="color: #B45309;">0</span> <button class="qty-btn w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold shadow-md" style="background: #DCFCE7; color: #16A34A;" onclick="updateQuantity('grass-jelly', 1)">+</button>
+       </div>
+      </div>
+     </div><!-- Product 4: 酸辣湯 -->
+     <div class="product-card rounded-2xl p-5 shadow-lg" style="background: #FFFFFF;" data-product="hot-sour">
+      <div class="flex items-center justify-between">
+       <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl" style="background: #FED7AA;">
+         🌶️
+        </div>
+        <div>
+         <h3 class="font-bold text-lg" style="color: #B45309;">酸辣湯</h3>
+         <p class="text-sm" style="color: #78716C;">酸香微辣   暖心暖胃</p>
+         <p class="font-bold mt-1" style="color: #DC2626;">$120</p>
+        </div>
+       </div>
+       <div class="flex items-center gap-3"><button class="qty-btn w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold shadow-md" style="background: #FEE2E2; color: #DC2626;" onclick="updateQuantity('hot-sour', -1)">−</button> <span id="qty-hot-sour" class="w-8 text-center font-bold text-xl" style="color: #B45309;">0</span> <button class="qty-btn w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold shadow-md" style="background: #DCFCE7; color: #16A34A;" onclick="updateQuantity('hot-sour', 1)">+</button>
+       </div>
+      </div>
+     </div>
+    </div><!-- Customer Info Form -->
+    <div id="customer-form" class="rounded-2xl p-6 shadow-lg mb-6 hidden" style="background: #FFFFFF;">
+     <h2 class="text-xl font-bold mb-4" style="color: #B45309;">📝 填寫訂購資訊</h2>
+     <form id="order-form" class="space-y-4">
+      <div><label for="payment-amount" class="block text-sm font-medium mb-1" style="color: #78716C;">匯款金額 *</label> <input type="number" id="payment-amount" required class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-orange-400 focus:outline-none" style="color: #1F2937;" placeholder="請輸入匯款金額">
+      </div>
+      <div><label for="account-last5" class="block text-sm font-medium mb-1" style="color: #78716C;">帳號末五碼 *</label> <input type="text" id="account-last5" required maxlength="5" pattern="[0-9]{5}" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-orange-400 focus:outline-none" style="color: #1F2937;" placeholder="請輸入帳號末五碼">
+      </div>
+      <div><label for="recipient-name" class="block text-sm font-medium mb-1" style="color: #78716C;">  件人姓   *</label> <input type="text" id="recipient-name" required class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-orange-400 focus:outline-none" style="color: #1F2937;" placeholder="請輸入收件人姓名">
+      </div>
+      <div><label for="recipient-phone" class="block text-sm font-medium mb-1" style="color: #78716C;">聯絡電話 *</label> <input type="tel" id="recipient-phone" required class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-orange-400 focus:outline-none" style="color: #1F2937;" placeholder="請輸入聯絡電話">
+      </div>
+      <div><label for="recipient-address" class="block text-sm font-medium mb-1" style="color: #78716C;">收件地址 *</label> <textarea id="recipient-address" required rows="2" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-orange-400 focus:outline-none resize-none" style="color: #1F2937;" placeholder="請輸入完整收件地址"></textarea>
+      </div>
+      <div><label for="order-notes" class="block text-sm font-medium mb-1" style="color: #78716C;">備註</label> <textarea id="order-notes" rows="2" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-orange-400 focus:outline-none resize-none" style="color: #1F2937;" placeholder="其他     求或備註事項（選填）"></textarea>
+      </div>
+     </form>
+    </div><!-- Order Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 hidden" style="z-index: 100;">
+     <div class="rounded-3xl p-8 shadow-2xl max-w-lg w-full max-h-[90%] overflow-y-auto" style="background: #FFFFFF;">
+      <h2 class="text-2xl font-bold mb-6 text-center" style="color: #B45309;">📋 訂單確認</h2>
+      <div class="space-y-4 mb-6">
+       <div class="rounded-xl p-4" style="background: #FEF3C7;">
+        <h3 class="font-bold mb-2" style="color: #B45309;">訂單明細</h3>
+        <div id="confirm-order-items" class="space-y-1 text-sm" style="color: #78716C;"></div>
+       </div>
+       <div class="rounded-xl p-4" style="background: #DBEAFE;">
+        <h3 class="font-bold mb-2" style="color: #B45309;">付款   訊</h3>
+        <div class="space-y-1 text-sm" style="color: #78716C;">
+         <p>匯款金額：<span id="confirm-payment-amount" class="font-bold"></span></p>
+         <p>帳號末五碼：<span id="confirm-account" class="font-bold"></span></p>
+        </div>
+       </div>
+       <div class="rounded-xl p-4" style="background: #DCFCE7;">
+        <h3 class="font-bold mb-2" style="color: #B45309;">收件資訊</h3>
+        <div class="space-y-1 text-sm" style="color: #78716C;">
+         <p>收件人：<span id="confirm-name" class="font-bold"></span></p>
+         <p>電話：<span id="confirm-phone" class="font-bold"></span></p>
+         <p>地址：<span id="confirm-address" class="font-bold"></span></p>
+         <p id="confirm-notes-row" class="hidden">備註：<span id="confirm-notes" class="font-bold"></span></p>
+        </div>
+       </div>
+       <div class="rounded-xl p-4" style="background: linear-gradient(135deg, #B45309 0%, #D97706 100%);">
+        <div class="flex items-center justify-between text-white"><span class="font-bold">應付總額</span> <span id="confirm-total" class="text-3xl font-bold"></span>
+        </div>
+       </div>
+      </div>
+      <div class="flex gap-3"><button onclick="cancelOrder()" class="flex-1 py-3 rounded-xl font-bold transition-all hover:scale-105" style="background: #E5E7EB; color: #4B5563;"> 取消 </button> <button onclick="submitOrder()" id="submit-order-btn" class="flex-1 py-3 rounded-xl font-bold transition-all hover:scale-105" style="background: #16A34A; color: white;"> 確認送出 </button>
+      </div>
+     </div>
+    </div><!-- Thank You Page -->
+    <div id="thank-you-page" class="fixed inset-0 flex items-center justify-center p-4 hidden" style="background: linear-gradient(135deg, #fff5f5 0%, #fef3e2 50%, #f0fdf4 100%); z-index: 101;">
+     <div class="text-center max-w-md">
+      <div class="mb-6 animate-bounce">
+       <svg class="w-24 h-24 mx-auto" viewbox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" fill="#16A34A" /> <path d="M14 24L20 30L34 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+       </svg>
+      </div>
+      <h1 class="text-4xl font-bold mb-4" style="color: #B45309;">謝謝選購！</h1>
+      <p class="text-xl mb-3" style="color: #78716C;">您的訂單已送出</p>
+      <div class="inline-flex items-center gap-2 px-6 py-3 rounded-xl mt-4" style="background: #FEF3C7;"><span class="text-2xl">🥘</span> <span class="font-medium" style="color: #B45309;">期待您再次光臨！</span>
+      </div>
+     </div>
+    </div><!-- Compact Summary Card - Bottom Right -->
+    <div id="compact-summary" class="fixed bottom-6 right-6 rounded-2xl p-4 shadow-2xl transition-all cursor-pointer hover:scale-105 hidden" style="background: linear-gradient(135deg, #B45309 0%, #D97706 100%); min-width: 220px; z-index: 50;" onclick="toggleSummaryExpand()">
+     <div class="text-white">
+      <div class="flex items-center justify-between gap-4 mb-2">
+       <div>
+        <p class="text-xs opacity-80">購物車</p>
+        <p id="compact-item-count" class="text-sm font-medium">0 件</p>
+       </div>
+       <div class="text-right">
+        <p class="text-xs opacity-80">商品</p>
+        <p id="compact-subtotal" class="text-lg font-bold">$0</p>
+       </div>
+      </div>
+      <div class="flex items-center justify-between gap-4 pb-2 mb-2 border-b border-white/30">
+       <p class="text-xs opacity-80">運費</p>
+       <p id="compact-shipping" class="text-sm font-bold">$0</p>
+      </div>
+      <div class="flex items-center justify-between gap-4 mb-3">
+       <p class="text-sm font-medium">總計</p>
+       <p id="compact-total" class="text-2xl font-bold">$0</p>
+      </div><button id="compact-checkout-btn" class="w-full py-2 rounded-lg font-bold text-sm transition-all" style="background: #FFFFFF; color: #B45309;" onclick="event.stopPropagation(); handleCheckout()"> 確認購買 </button>
+     </div>
+    </div><!-- Expanded Summary Modal -->
+    <div id="expanded-summary" class="fixed bottom-6 right-6 rounded-2xl p-6 shadow-2xl hidden" style="background: linear-gradient(135deg, #B45309 0%, #D97706 100%); max-width: 400px; z-index: 51;">
+     <div class="flex items-center justify-between text-white mb-4">
+      <h3 class="text-lg font-bold">購物清單</h3><button onclick="toggleSummaryExpand()" class="text-2xl leading-none hover:scale-110 transition-all">×</button>
+     </div>
+     <div class="text-white space-y-3">
+      <div class="flex items-center justify-between">
+       <p class="text-sm opacity-80">商品數量</p>
+       <p id="expanded-item-count" class="font-medium">0 件</p>
+      </div>
+      <div id="expanded-order-details" class="py-3 border-y border-white/20 space-y-2 text-sm max-h-48 overflow-y-auto"></div>
+      <div class="flex items-center justify-between">
+       <p class="text-sm">商品小計</p>
+       <p id="expanded-subtotal" class="font-bold">$0</p>
+      </div>
+      <div class="flex items-center justify-between">
+       <p class="text-sm">運費</p>
+       <p id="expanded-shipping" class="font-bold">$0</p>
+      </div>
+      <p id="expanded-shipping-notice" class="text-xs opacity-70 hidden"></p>
+      <div class="flex items-center justify-between pt-3 border-t-2 border-white/30">
+       <p class="text-lg font-medium">應付總額</p>
+       <p id="expanded-total" class="text-2xl font-bold">$0</p>
+      </div>
+     </div>
+    </div><!-- Footer -->
+    <p class="text-center text-sm mt-6" style="color: #9CA3AF;">單價皆為 $120 / 包</p>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      main_title: '輕鬆煮系列',
+      subtitle: '美味湯頭，在家輕鬆享用',
+      background_color: '#FFF5F5',
+      primary_color: '#B45309',
+      text_color: '#78716C',
+      card_color: '#FFFFFF',
+      accent_color: '#DC2626'
+    };
+
+    let config = { ...defaultConfig };
+
+    const products = {
+      'chinese-kimchi': { name: '中式泡菜湯頭', price: 120, qty: 0 },
+      'japanese-kombu': { name: '日式昆布湯  ', price: 120, qty: 0 },
+      'grass-jelly': { name: '仙草湯頭', price: 120, qty: 0 },
+      'hot-sour': { name: '酸辣湯', price: 120, qty: 0 }
+    };
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function updateQuantity(productId, change) {
+      const product = products[productId];
+      const newQty = Math.max(0, product.qty + change);
+      product.qty = newQty;
+      
+      const qtyElement = document.getElementById(`qty-${productId}`);
+      qtyElement.textContent = newQty;
+      qtyElement.classList.add('bounce-in');
+      setTimeout(() => qtyElement.classList.remove('bounce-in'), 400);
+      
+      updateTotal();
+    }
+
+    function updateTotal() {
+      let totalItems = 0;
+      let subtotalPrice = 0;
+      const orderDetails = [];
+
+      for (const [id, product] of Object.entries(products)) {
+        if (product.qty > 0) {
+          totalItems += product.qty;
+          subtotalPrice += product.qty * product.price;
+          orderDetails.push(`${product.name} x ${product.qty} = $${product.qty * product.price}`);
+        }
+      }
+
+      const FREE_SHIPPING_THRESHOLD = 2500;
+      const SHIPPING_FEE = 240;
+      const needsShipping = subtotalPrice > 0 && subtotalPrice < FREE_SHIPPING_THRESHOLD;
+      const shippingFee = needsShipping ? SHIPPING_FEE : 0;
+      const totalPrice = subtotalPrice + shippingFee;
+
+      // Update compact summary
+      const compactSummary = document.getElementById('compact-summary');
+      const compactItemCount = document.getElementById('compact-item-count');
+      const compactSubtotal = document.getElementById('compact-subtotal');
+      const compactShipping = document.getElementById('compact-shipping');
+      const compactTotal = document.getElementById('compact-total');
+      const compactCheckoutBtn = document.getElementById('compact-checkout-btn');
+      
+      compactItemCount.textContent = `${totalItems} 件`;
+      compactSubtotal.textContent = `$${subtotalPrice}`;
+      compactShipping.textContent = `$${shippingFee}`;
+      compactTotal.textContent = `$${totalPrice}`;
+      compactTotal.classList.add('total-pulse');
+      setTimeout(() => compactTotal.classList.remove('total-pulse'), 300);
+
+      if (totalItems > 0) {
+        compactSummary.classList.remove('hidden');
+        compactCheckoutBtn.disabled = false;
+        compactCheckoutBtn.style.opacity = '1';
+      } else {
+        compactSummary.classList.add('hidden');
+        compactCheckoutBtn.disabled = true;
+        compactCheckoutBtn.style.opacity = '0.5';
+      }
+
+      // Update expanded summary
+      const expandedItemCount = document.getElementById('expanded-item-count');
+      const expandedOrderDetails = document.getElementById('expanded-order-details');
+      const expandedSubtotal = document.getElementById('expanded-subtotal');
+      const expandedShipping = document.getElementById('expanded-shipping');
+      const expandedShippingNotice = document.getElementById('expanded-shipping-notice');
+      const expandedTotal = document.getElementById('expanded-total');
+
+      expandedItemCount.textContent = `${totalItems} 件`;
+      expandedOrderDetails.innerHTML = orderDetails.map(d => `<p>• ${d}</p>`).join('');
+      expandedSubtotal.textContent = `$${subtotalPrice}`;
+      expandedShipping.textContent = `$${shippingFee}`;
+      expandedTotal.textContent = `$${totalPrice}`;
+
+      if (needsShipping) {
+        const remaining = FREE_SHIPPING_THRESHOLD - subtotalPrice;
+        expandedShippingNotice.textContent = `🎉 再購買 $${remaining} 即可免運費！`;
+        expandedShippingNotice.classList.remove('hidden');
+      } else if (subtotalPrice >= FREE_SHIPPING_THRESHOLD) {
+        expandedShippingNotice.textContent = `✨ 已達免運門檻！`;
+        expandedShippingNotice.classList.remove('hidden');
+      } else {
+        expandedShippingNotice.classList.add('hidden');
+      }
+
+      // Update form
+      const customerForm = document.getElementById('customer-form');
+      const paymentAmountInput = document.getElementById('payment-amount');
+      
+      if (totalItems > 0) {
+        customerForm.classList.remove('hidden');
+        paymentAmountInput.value = totalPrice;
+      } else {
+        customerForm.classList.add('hidden');
+      }
+    }
+
+    function toggleSummaryExpand() {
+      const compactSummary = document.getElementById('compact-summary');
+      const expandedSummary = document.getElementById('expanded-summary');
+      
+      if (expandedSummary.classList.contains('hidden')) {
+        compactSummary.classList.add('hidden');
+        expandedSummary.classList.remove('hidden');
+      } else {
+        expandedSummary.classList.add('hidden');
+        compactSummary.classList.remove('hidden');
+      }
+    }
+
+    async function handleCheckout() {
+      const form = document.getElementById('order-form');
+      
+      // Validate form
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        showToast('請填寫所有必填欄位', 'error');
+        return;
+      }
+
+      // Prepare order data
+      let totalItems = 0;
+      let subtotalPrice = 0;
+      const orderItems = [];
+      
+      for (const [id, product] of Object.entries(products)) {
+        if (product.qty > 0) {
+          totalItems += product.qty;
+          subtotalPrice += product.qty * product.price;
+          orderItems.push({
+            name: product.name,
+            quantity: product.qty,
+            price: product.price,
+            subtotal: product.qty * product.price
+          });
+        }
+      }
+
+      const FREE_SHIPPING_THRESHOLD = 2500;
+      const SHIPPING_FEE = 240;
+      const needsShipping = subtotalPrice > 0 && subtotalPrice < FREE_SHIPPING_THRESHOLD;
+      const shippingFee = needsShipping ? SHIPPING_FEE : 0;
+      const totalPrice = subtotalPrice + shippingFee;
+
+      // Get form data
+      const paymentAmount = document.getElementById('payment-amount').value;
+      const accountLast5 = document.getElementById('account-last5').value;
+      const recipientName = document.getElementById('recipient-name').value;
+      const recipientPhone = document.getElementById('recipient-phone').value;
+      const recipientAddress = document.getElementById('recipient-address').value;
+      const orderNotes = document.getElementById('order-notes').value;
+
+      // Show confirmation modal
+      document.getElementById('confirm-order-items').innerHTML = 
+        orderItems.map(item => 
+          `<p>• ${item.name} x ${item.quantity} = $${item.subtotal}</p>`
+        ).join('') +
+        `<p class="mt-2 pt-2 border-t border-gray-300">商品小計：$${subtotalPrice}</p>` +
+        `<p>運費：$${shippingFee}${needsShipping ? '' : ' (已達免運門檻)'}</p>`;
+      
+      document.getElementById('confirm-payment-amount').textContent = `$${paymentAmount}`;
+      document.getElementById('confirm-account').textContent = accountLast5;
+      document.getElementById('confirm-name').textContent = recipientName;
+      document.getElementById('confirm-phone').textContent = recipientPhone;
+      document.getElementById('confirm-address').textContent = recipientAddress;
+      
+      if (orderNotes) {
+        document.getElementById('confirm-notes-row').classList.remove('hidden');
+        document.getElementById('confirm-notes').textContent = orderNotes;
+      } else {
+        document.getElementById('confirm-notes-row').classList.add('hidden');
+      }
+      
+      document.getElementById('confirm-total').textContent = `$${totalPrice}`;
+      document.getElementById('confirmation-modal').classList.remove('hidden');
+    }
+
+    function cancelOrder() {
+      document.getElementById('confirmation-modal').classList.add('hidden');
+    }
+
+    async function submitOrder() {
+      const submitBtn = document.getElementById('submit-order-btn');
+      submitBtn.innerHTML = '<div class="spinner mx-auto"></div>';
+      submitBtn.disabled = true;
+
+      // Prepare order data for email
+      let totalItems = 0;
+      let subtotalPrice = 0;
+      const orderItems = [];
+      
+      for (const [id, product] of Object.entries(products)) {
+        if (product.qty > 0) {
+          totalItems += product.qty;
+          subtotalPrice += product.qty * product.price;
+          orderItems.push({
+            name: product.name,
+            quantity: product.qty,
+            price: product.price,
+            subtotal: product.qty * product.price
+          });
+        }
+      }
+
+      const FREE_SHIPPING_THRESHOLD = 2500;
+      const SHIPPING_FEE = 240;
+      const needsShipping = subtotalPrice > 0 && subtotalPrice < FREE_SHIPPING_THRESHOLD;
+      const shippingFee = needsShipping ? SHIPPING_FEE : 0;
+      const totalPrice = subtotalPrice + shippingFee;
+
+      const paymentAmount = document.getElementById('payment-amount').value;
+      const accountLast5 = document.getElementById('account-last5').value;
+      const recipientName = document.getElementById('recipient-name').value;
+      const recipientPhone = document.getElementById('recipient-phone').value;
+      const recipientAddress = document.getElementById('recipient-address').value;
+      const orderNotes = document.getElementById('order-notes').value;
+
+      // Create email body
+      const emailSubject = encodeURIComponent('輕鬆煮系列 - 新訂單通知');
+      const emailBody = encodeURIComponent(
+        `輕鬆煮系列訂單\n` +
+        `==================\n\n` +
+        `【訂單明細】\n` +
+        orderItems.map(item => 
+          `${item.name}\n  數量：${item.quantity}\n  單價：$${item.price}\n  小計：$${item.subtotal}\n`
+        ).join('\n') +
+        `\n商品小計：$${subtotalPrice}\n` +
+        `運費：$${shippingFee}${needsShipping ? '' : ' (已達免運門檻$2500)'}\n` +
+        `應付總額：$${totalPrice}\n` +
+        `總計：${totalItems} 件商品\n\n` +
+        `==================\n\n` +
+        `【付款資訊】\n` +
+        `匯款金額：$${paymentAmount}\n` +
+        `帳號末五碼：${accountLast5}\n\n` +
+        `==================\n\n` +
+        `【收件資訊】\n` +
+        `收件人：${recipientName}\n` +
+        `聯絡電話：${recipientPhone}\n` +
+        `收件地址：${recipientAddress}\n` +
+        (orderNotes ? `\n備註：${orderNotes}\n` : '') +
+        `\n==================\n` +
+        `訂單時間：${new Date().toLocaleString('zh-TW')}`
+      );
+      
+      const recipientEmail = 'wsuchl@gmail.com';
+      const mailtoLink = `mailto:${recipientEmail}?subject=${emailSubject}&body=${emailBody}`;
+      
+      // Auto-send email without user interaction
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = mailtoLink;
+      document.body.appendChild(iframe);
+      
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+
+      // Show thank you page
+      setTimeout(() => {
+        document.getElementById('confirmation-modal').classList.add('hidden');
+        document.getElementById('thank-you-page').classList.remove('hidden');
+        
+        submitBtn.innerHTML = '確認送出';
+        submitBtn.disabled = false;
+      }, 1500);
+    }
+
+    async function onConfigChange(newConfig) {
+      config = { ...defaultConfig, ...newConfig };
+      
+      document.getElementById('main-title').textContent = config.main_title || defaultConfig.main_title;
+      document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
+      
+      document.getElementById('main-title').style.color = config.primary_color || defaultConfig.primary_color;
+      document.getElementById('subtitle').style.color = config.text_color || defaultConfig.text_color;
+      
+      document.querySelectorAll('.product-card').forEach(card => {
+        card.style.background = config.card_color || defaultConfig.card_color;
+      });
+      
+      document.querySelectorAll('.product-card h3').forEach(h3 => {
+        h3.style.color = config.primary_color || defaultConfig.primary_color;
+      });
+      
+      document.querySelectorAll('.product-card p:last-of-type').forEach(p => {
+        if (p.textContent.startsWith('$')) {
+          p.style.color = config.accent_color || defaultConfig.accent_color;
+        }
+      });
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [
+          {
+            get: () => cfg.background_color || defaultConfig.background_color,
+            set: (value) => { cfg.background_color = value; window.elementSdk.setConfig({ background_color: value }); }
+          },
+          {
+            get: () => cfg.card_color || defaultConfig.card_color,
+            set: (value) => { cfg.card_color = value; window.elementSdk.setConfig({ card_color: value }); }
+          },
+          {
+            get: () => cfg.text_color || defaultConfig.text_color,
+            set: (value) => { cfg.text_color = value; window.elementSdk.setConfig({ text_color: value }); }
+          },
+          {
+            get: () => cfg.primary_color || defaultConfig.primary_color,
+            set: (value) => { cfg.primary_color = value; window.elementSdk.setConfig({ primary_color: value }); }
+          },
+          {
+            get: () => cfg.accent_color || defaultConfig.accent_color,
+            set: (value) => { cfg.accent_color = value; window.elementSdk.setConfig({ accent_color: value }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ['main_title', cfg.main_title || defaultConfig.main_title],
+        ['subtitle', cfg.subtitle || defaultConfig.subtitle]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c03a6f3e037f1c8',t:'MTc2ODc5NzYwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
